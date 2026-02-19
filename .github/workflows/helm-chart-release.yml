@@ -5,6 +5,10 @@ on:
   push:
     branches:
       - master
+    paths:
+      - 'helm/**/Chart.yaml'
+      - 'helm/**/values.yaml'
+      - 'helm/**/templates/**'
 
 jobs:
   release:
@@ -25,13 +29,32 @@ jobs:
         with:
           version: v3.16.4
 
-      - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.6.0
-        with:
-          # The charts directory
-          charts_dir: helm
-          # The GitHub Pages URL to the charts repo (default: https://<owner>.github.io/<repo>)
+      - name: Install chart-releaser
+        run: |
+          curl -LO "https://github.com/helm/chart-releaser/releases/download/v1.6.1/chart-releaser_1.6.1_linux_amd64.tar.gz"
+          tar -xzf chart-releaser_1.6.1_linux_amd64.tar.gz
+          sudo mv cr /usr/local/bin/cr
+
+      - name: Package charts
+        run: cr package helm/amd-gpu
+
+      - name: Release charts
+        run: |
+          cr upload \
+            --skip-existing \
+            --release-name-template "{{ .Name }}-helm-{{ .Version }}" \
+            --package-path .cr-release-packages
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          CR_RELEASE_NAME_TEMPLATE: "{{ .Name }}-helm-{{ .Version }}"
-          CR_PAGES_BRANCH: "helm-chart-release"
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Update index
+        run: |
+          cr index \
+            --skip-existing \
+            --release-name-template "{{ .Name }}-helm-{{ .Version }}" \
+            --pages-branch helm-chart-release \
+            --package-path .cr-release-packages
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
