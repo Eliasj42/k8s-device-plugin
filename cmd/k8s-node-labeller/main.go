@@ -428,6 +428,10 @@ var labelGenerators = map[string]func(map[string]map[string]interface{}) map[str
 		
 		return map[string]string{pfx: version}
 	},
+	"sanity-check": func(gpus map[string]map[string]interface{}) map[string]string {
+		pfx := createLabelPrefix("sanity-check", false)
+		return map[string]string{pfx: "1"}
+	},
 }
 
 var labelProperties = make(map[string]*bool, len(labelGenerators))
