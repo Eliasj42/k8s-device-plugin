@@ -418,6 +418,28 @@ var labelGenerators = map[string]func(map[string]map[string]interface{}) map[str
 			return map[string]string{}
 		}
 		
+		// Sanitize version for Kubernetes label value
+		// Kubernetes labels can only contain alphanumeric, '-', '_', or '.'
+		// and must start/end with alphanumeric
+		// Replace colons and other invalid chars with hyphens
+		version = strings.ReplaceAll(version, ":", "-")
+		// Remove any other invalid characters (keep only alphanumeric, '-', '_', '.')
+		var sanitized strings.Builder
+		for _, r := range version {
+			if (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '-' || r == '_' || r == '.' {
+				sanitized.WriteRune(r)
+			} else {
+				sanitized.WriteRune('-')
+			}
+		}
+		version = sanitized.String()
+		// Ensure it starts and ends with alphanumeric
+		version = strings.Trim(version, "-_.")
+		if version == "" {
+			log.Info("Version became empty after sanitization")
+			return map[string]string{}
+		}
+		
 		pfx := createLabelPrefix("kernel-driver-version", false)
 		
 		// Kubernetes labels have a 63 character limit
