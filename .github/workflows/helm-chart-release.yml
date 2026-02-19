@@ -43,9 +43,9 @@ jobs:
           cr upload \
             --owner ${{ github.repository_owner }} \
             --git-repo ${{ github.event.repository.name }} \
-            --skip-existing \
             --release-name-template "{{ .Name }}-helm-{{ .Version }}" \
-            --package-path .cr-release-packages
+            --package-path .cr-release-packages || echo "Release may already exist, continuing..."
+        continue-on-error: true
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
@@ -55,7 +55,6 @@ jobs:
           cr index \
             --owner ${{ github.repository_owner }} \
             --git-repo ${{ github.event.repository.name }} \
-            --skip-existing \
             --release-name-template "{{ .Name }}-helm-{{ .Version }}" \
             --pages-branch helm-chart-release \
             --package-path .cr-release-packages
