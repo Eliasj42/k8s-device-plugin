@@ -52,7 +52,7 @@ spec:
       - key: CriticalAddonsOnly
         operator: Exists
       containers:
-      - image: rocm/k8s-device-plugin:labeller-latest
+      - image: ghcr.io/eliasj42/k8s-device-plugin:labeller-latest
         name: amdgpu-lr-cntr
         imagePullPolicy: Always
         workingDir: /root

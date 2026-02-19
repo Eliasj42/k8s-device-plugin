@@ -376,6 +376,58 @@ var labelGenerators = map[string]func(map[string]map[string]interface{}) map[str
 		pfx := createLabelPrefix("memory-partitioning-supported", false)
 		return map[string]string{pfx: val}
 	},
+	"kernel-driver-version": func(gpus map[string]map[string]interface{}) map[string]string {
+		dpkgStatusPath := "/var/lib/dpkg/status"
+		b, err := ioutil.ReadFile(dpkgStatusPath)
+		if err != nil {
+			log.Error(err, dpkgStatusPath)
+			return map[string]string{}
+		}
+		
+		// Parse dpkg status file to find amdgpu-dkms package entry and extract Version
+		content := string(b)
+		packageName := "amdgpu-dkms"
+		version := ""
+		
+		lines := strings.Split(content, "\n")
+		for i, line := range lines {
+			// Check if this line starts a new package entry
+			if strings.HasPrefix(line, "Package: ") {
+				if strings.TrimPrefix(line, "Package: ") == packageName {
+					// Continue reading lines until we hit a blank line or next package
+					for j := i + 1; j < len(lines); j++ {
+						nextLine := lines[j]
+						// Stop at blank line or next package entry
+						if nextLine == "" || strings.HasPrefix(nextLine, "Package: ") {
+							break
+						}
+						// Look for Version field
+						if strings.HasPrefix(nextLine, "Version: ") {
+							version = strings.TrimPrefix(nextLine, "Version: ")
+							version = strings.TrimSpace(version)
+							break
+						}
+					}
+					break
+				}
+			}
+		}
+		
+		if version == "" {
+			log.Info("Version not found for package amdgpu-dkms in dpkg status")
+			return map[string]string{}
+		}
+		
+		pfx := createLabelPrefix("kernel-driver-version", false)
+		
+		// Kubernetes labels have a 63 character limit
+		if len(version) > 63 {
+			// Truncate to fit Kubernetes label limit
+			version = version[:60] + "..."
+		}
+		
+		return map[string]string{pfx: version}
+	},
 }
 
 var labelProperties = make(map[string]*bool, len(labelGenerators))
