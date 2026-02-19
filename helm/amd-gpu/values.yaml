@@ -18,7 +18,7 @@ dp:
 
 lbl:
   image:
-    repository: docker.io/rocm/k8s-device-plugin
+    repository: ghcr.io/eliasj42/k8s-device-plugin
     tag: "labeller-1.31.0.9"
   serviceAccount:
     annotations: {}
