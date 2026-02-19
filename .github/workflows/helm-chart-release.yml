@@ -41,6 +41,8 @@ jobs:
       - name: Release charts
         run: |
           cr upload \
+            --owner ${{ github.repository_owner }} \
+            --git-repo ${{ github.repository }} \
             --skip-existing \
             --release-name-template "{{ .Name }}-helm-{{ .Version }}" \
             --package-path .cr-release-packages
@@ -51,6 +53,8 @@ jobs:
       - name: Update index
         run: |
           cr index \
+            --owner ${{ github.repository_owner }} \
+            --git-repo ${{ github.repository }} \
             --skip-existing \
             --release-name-template "{{ .Name }}-helm-{{ .Version }}" \
             --pages-branch helm-chart-release \
