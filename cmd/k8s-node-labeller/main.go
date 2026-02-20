@@ -384,9 +384,9 @@ var labelGenerators = map[string]func(map[string]map[string]interface{}) map[str
 			return map[string]string{}
 		}
 		
-		// Parse dpkg status file to find amdgpu-dkms package entry and extract Version
+		// Parse dpkg status file to find amdgpu-dkms-firmware package entry and extract Version
 		content := string(b)
-		packageName := "amdgpu-dkms"
+		packageName := "amdgpu-dkms-firmware"
 		version := ""
 		
 		lines := strings.Split(content, "\n")
@@ -414,7 +414,7 @@ var labelGenerators = map[string]func(map[string]map[string]interface{}) map[str
 		}
 		
 		if version == "" {
-			log.Info("Version not found for package amdgpu-dkms in dpkg status")
+			log.Info("Version not found for package amdgpu-dkms-firmware in dpkg status")
 			return map[string]string{}
 		}
 		
